@@ -1,6 +1,7 @@
 import sys
 from collections import deque
 from turtle import distance
+import operator
 
 
 class Problem:  #这是抽象类 不需要在这一类写方法函数 以后的应用类都会重载
@@ -132,13 +133,7 @@ class Node:
 
 
 #############################
-
-
-
-
-
-#neighbor_map
-romania_map = {'Arad':['Zerind','Sibiu','Timisoara'],'Bucharest':['Urziceni', 'Pitesti', 'Giurgiu', 'Fagaras'],'Craiova':['Drobeta', 'Rimnicu', 'Pitesti'],'Drobeta':['Mehadia'],'Eforie':['Hirsova'],
+neighbor_map = {'Arad':['Zerind','Sibiu','Timisoara'],'Bucharest':['Urziceni', 'Pitesti', 'Giurgiu', 'Fagaras'],'Craiova':['Drobeta', 'Rimnicu', 'Pitesti'],'Drobeta':['Mehadia'],'Eforie':['Hirsova'],
 'Fagaras':['Sibiu'],'Hirsova':['Urziceni'],'Iasi':['Vaslui','Neamt'],'Lugoj':['Timisoara','Mehadia'],
 'Oradea':['Zerind', 'Sibiu'],'Pitesti':['Rimnicu'],'Rimnicu':['Sibiu'],'Urziceni':['Vaslui']}
                
@@ -147,14 +142,16 @@ neighbormapWithweight = {'Arad':{'Zerind':75,'Sibiu':140,'Timisoara':118},
                          'Craiova':{'Drobeta':120, 'Rimnicu':146, 'Pitesti':138},
                          'Drobeta':{'Mehadia':75},
                          'Eforie':{'Hirsova':86},
-                         'Fagaras':{'Sibiu':99},
+                         'Fagaras':{'Bucharest':211},
                          'Hirsova':{'Urziceni':98},
                          'Iasi':{'Vaslui':92,'Neamt':87},
                          'Lugoj':{'Timisoara':111,'Mehadia':70},
-                         'Oradea':{'Zerind':71, 'Sibiu':151},
-                         'Pitesti':{'Rimnicu':97},
-                         'Rimnicu':{'Sibiu':80},
-                         'Urziceni':{'Vaslui':142}
+                         'Oradea':{'Sibiu':151},
+                         'Pitesti':{'Bucharest':101},
+                         'Rimnicu':{'Pitesti':97,'Craivoa':146},
+                         'Urziceni':{'Vaslui':142},
+                         'Sibiu':{'Fagaras':99,'Rimnicu':80},
+                         'Zerind':{'Oradea':71}
                          }
                          
                          
@@ -192,20 +189,112 @@ class GraphProblem(Problem): #实例化Problem抽象类
         return 0
 
 
+class StackFrontier():
+    def __init__(self):
+        self.frontier = {}
+
+    def add(self, node):
+        self.frontier[node.state] = node.path_cost
+
+    def contains_state(self, state):
+        return any(node.state == state for node in self.frontier)
+
+    def empty(self):
+        return len(self.frontier) == 0
+
+    def remove(self):
+        if self.empty():
+            raise Exception("empty frontier")
+        else:
+            return self.frontier.popitem()
 
 
-def greedy_best_first_graph_search(problem,h=None):
+class QueueFrontier(StackFrontier):
 
-    return 1
+    # def quene_sort(self):
+    #     # sorted(self.frontier.keys())
+    #     sorted(self.frontier.items(), key=operator.itemgetter(1))
+
+    def add(self, node):
+        self.frontier[node.state] = node.path_cost
+        # self.frontier.update({node.state,node.path_cost})
+
+    def remove(self):
+        if self.empty():
+            raise Exception("empty frontier")
+        else:
+            # 请添加你的代码，按照先进先出的顺序移除结点
+            node = self.frontier[0]
+            # 请更新frontier表，使得frontier表为移除了一个结点剩下的结点组成
+            self.frontier = self.frontier[1:]
+            return node
+
+#---
+
+#---c
+
+class Romania_trip(Problem):
+    def __init__(self,initial,goal,graph,graph_weight):
+        Problem.__init__(self, initial, goal)
+        self.graph = graph
+        self.goal = goal
+        self.state = Node
+        self.graphWeight = graph_weight
+        # print("init succeed")
+        # print("initial = {}   goal = {}".format(self.initial,self.goal))
+        # print(graph[initial])
 
 
-def astar_search(problem, h=None):
+    def goal_test(self, state):
+        # if isinstance(self.goal, list):
+        #     return is_in(state, self.goal)
+        # else:
+        #     return state == self.goal
+        return state != self.goal
 
-    return 1
+    # type=2 为A*搜索启发函数
+    def h(self, type):
+        if type == 1:
+            return 1
+        else:
+            return 0
 
 
+    def greedy_best_first_graph_search(self):
+        print('greedy_best_first_graph_search:')
+        mainpath = 0
+        start = Node(state=self.initial,path_cost=0)
+        frontier = StackFrontier()
+        frontier.add(start)
+        self.state = self.initial
+
+        while self.goal_test(self.state[0]):
+            self.state = frontier.remove()
+            if self.goal_test(self.state[0])==0:
+                break;
+            print(self.state,end="-->")
+            it = self.graphWeight[self.state[0]]
+            min_num = 100000
+            min_name = ''
+            for i in it.keys():
+                # frontier.add(Node(state=i,path_cost=it[i]))
+                if(it[i]<min_num):
+                    min_num = it[i]
+                    min_name = i
+            mainpath = mainpath + min_num
+            frontier.add(Node(state=min_name,path_cost=min_num))
 
 
+        print(self.goal,end='\n')
+        print(mainpath)
+
+    def astar_search(self, h=None):
+
+        return 1
+
+
+rt = Romania_trip('Arad','Bucharest',neighbor_map,neighbormapWithweight)
+rt.greedy_best_first_graph_search()
 
 
 
