@@ -135,8 +135,12 @@ class Maze():
 
         # please add the frontier of stackfroniter or queuefrontier
         # 请声明栈结构或者队列的frontier实例
-        frontier = StackFrontier()
+
+        #---------
+        # frontier = QueueFrontier()  #广度优先搜索算法使用
+        frontier = StackFrontier()  #深度优先搜索算法使用
         frontier.add(start)
+        # ---------
 
         # Initialize an empty explored set
         self.explored = set()
@@ -237,4 +241,4 @@ m.solve()
 print("States Explored:", m.num_explored)
 print("Solution:")
 m.print()
-m.output_image("maze.png", show_explored=True)
+m.output_image("maze2-1.png", show_explored=True)
