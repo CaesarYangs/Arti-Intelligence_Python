@@ -216,7 +216,7 @@ class StackFrontier():
             return self.frontier.popitem()
 
 
-class QueueFrontier(StackFrontier):
+class QueueFrontier(StackFrontier,Node):
     def __init__(self):
         self.frontier = collections.OrderedDict()
     # def quene_sort(self):
@@ -235,6 +235,9 @@ class QueueFrontier(StackFrontier):
         else:
             # self.frontier.popitem()
             return next(iter(self.frontier.items()))
+
+    def getDepth(self):
+        return self.depth
 
     def remove(self):
         if self.empty():
@@ -330,9 +333,9 @@ class Romania_trip(Problem):
         # for i in path:
         #     print(i,'-->',end='')
 
-rt = Romania_trip('Arad','Bucharest',neighbor_map,neighbormapWithweight,distance_to_Bu)
-# rt.greedy_best_first_graph_search()
-rt.astar_search()
+# rt = Romania_trip('Arad','Bucharest',neighbor_map,neighbormapWithweight,distance_to_Bu)
+# # rt.greedy_best_first_graph_search()
+# rt.astar_search()
 
 
 
@@ -345,7 +348,9 @@ class EightPuzzle(Problem):
 
     def __init__(self, initial, goal=(1, 2, 3, 4, 5, 6, 7, 8, 0)):
         """ Define goal state and initialize a problem """
+        self.state = initial
         super().__init__(initial, goal)
+
 
     def find_blank_square(self, state):
         """Return the index of the blank square in a given state"""
@@ -388,7 +393,7 @@ class EightPuzzle(Problem):
     def goal_test(self, state):
         """ Given a state, return True if state is a goal state or False, otherwise """
 
-        return state == self.goal
+        return state != self.goal
 
     def check_solvability(self, state):
         """ Checks if the given state is solvable """
@@ -401,13 +406,91 @@ class EightPuzzle(Problem):
 
         return inversion % 2 == 0
 
-    def h(self, node):
+    def show_state(self,state):
+        for i in range(len(state)):
+            print(state[i], '|', end='')
+            if (i+1)%3 == 0:
+                print()
+
+        return
+
+    def h(self, state):
         """ Return the heuristic value for a given state. Default heuristic function used is 
         h(n) = number of misplaced tiles """
 
         ''' please implement your heuristic function'''
-        return 
+        m_distance = 0
+        pos = state
+        pos_goal = self.goal
+
+        for i in range(9):
+            if pos[i]==0:
+                continue
+            x = (pos_goal.index(pos[i]))// 3
+            y = (pos_goal.index(pos[i])) % 3
+            x_o = (i) // 3
+            y_o = (i) % 3
+            m_distance = m_distance + abs(x-x_o) + abs(y-y_o)
+
+        return m_distance
+
+    def astar_solve(self):
+        possible_mid = []
+        start = Node(state=self.initial, path_cost=0)
+        frontier = QueueFrontier()
+        frontier.add(start)
+        self.state = frontier.get()
+        depth = 0
+        num = 0
+
+        print('---start---')
+        while self.goal_test(self.state):
+            self.state = frontier.remove()[0]
+
+            print('--state:')
+            self.show_state(self.state)
+
+            possible_mid = self.actions(self.state)
+            for i in range(len(possible_mid)):
+                now_state = self.result(self.state, possible_mid[i])
+                step = depth + self.h(now_state)
+                frontier.add(Node(state=now_state,path_cost=step))
+            depth = depth + 1
+
+        print()
+        print(depth)
+
+        # path_depth = 0
+        # self.show_state(self.state)
+        # print()
+        # self.show_state(self.goal)
+        # print('---start---')
+        # # print(self.check_solvability(self.state))
+        # # print(self.actions(self.state))
+        # while self.goal_test(self.state):
+        #     possible_mid = self.actions(self.state)
+        #     min_step = 10000
+        #     for i in range(len(possible_mid)):
+        #         now_state = self.result(self.state,possible_mid[i])
+        #         step = path_depth + self.h(now_state)
+        #         if step<min_step:
+        #             min_step = step
+        #             min_state = now_state
+        #     self.state = min_state
+        #     print('--state:')
+        #     self.show_state(self.state)
+        # path_depth = path_depth+1
+        # print()
+        # print('m:',self.h(self.state))
 
 
+# test = (2,8,3,1,6,4,7,0,5)
+# test_goal = (1,2,3,8,0,4,7,6,5)
+# pz_test = EightPuzzle(initial=test,goal=test_goal)
+# pz_test.astar_solve()
 
-
+eight_initialu = (7,2,4,5,0,6,8,3,1)
+goal=(1,2,3,4,5,6,7,8,0)
+eight_initial = (2,4,3,1,5,6,7,8,0)
+pz = EightPuzzle(initial=eight_initial)
+pz.astar_solve()
