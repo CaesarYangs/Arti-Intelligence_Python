@@ -1,3 +1,4 @@
+import collections
 import sys
 from collections import deque
 from turtle import distance
@@ -110,6 +111,9 @@ class Node:
             node = node.parent
         return list(reversed(path_back))
 
+    def path_count_re(self):
+        return self.path_cost
+
     # We want for a queue of nodes in breadth_first_graph_search or
     # astar_search to have no duplicated states, so we treat nodes
     # with the same state as equal. [Problem: this may not be what you
@@ -145,13 +149,14 @@ neighbormapWithweight = {'Arad':{'Zerind':75,'Sibiu':140,'Timisoara':118},
                          'Fagaras':{'Bucharest':211},
                          'Hirsova':{'Urziceni':98},
                          'Iasi':{'Vaslui':92,'Neamt':87},
-                         'Lugoj':{'Timisoara':111,'Mehadia':70},
+                         'Lugoj':{'Mehadia':70},
                          'Oradea':{'Sibiu':151},
                          'Pitesti':{'Bucharest':101},
-                         'Rimnicu':{'Pitesti':97,'Craivoa':146},
+                         'Rimnicu':{'Pitesti':97,'Craiova':146},
                          'Urziceni':{'Vaslui':142},
                          'Sibiu':{'Fagaras':99,'Rimnicu':80},
-                         'Zerind':{'Oradea':71}
+                         'Zerind':{'Oradea':71},
+                         'Timisoara':{'Lugoj':111}
                          }
                          
                          
@@ -164,6 +169,8 @@ romania_map_locations = dict(
     Oradea=(131, 571), Pitesti=(320, 368), Rimnicu=(233, 410),
     Sibiu=(207, 457), Timisoara=(94, 410), Urziceni=(456, 350),
     Vaslui=(509, 444), Zerind=(108, 531))
+
+distance_to_Bu = dict({'Arad':366,'Sibiu':253,'Rimnicu':193,'Fagaras':178,'Pitesti':98,'Bucharest':0,'Timisoara':329,'Zerind':374,'Oradea':380,'Craiova':160,'Urziceni':80,'Giurgiu':77,'Lugoj':244,'Mehadia':241})
     #各个城市坐标信息
 
 class GraphProblem(Problem): #实例化Problem抽象类
@@ -210,36 +217,48 @@ class StackFrontier():
 
 
 class QueueFrontier(StackFrontier):
-
+    def __init__(self):
+        self.frontier = collections.OrderedDict()
     # def quene_sort(self):
     #     # sorted(self.frontier.keys())
     #     sorted(self.frontier.items(), key=operator.itemgetter(1))
 
     def add(self, node):
         self.frontier[node.state] = node.path_cost
+        self.frontier = collections.OrderedDict(sorted(self.frontier.items(), key=lambda t: t[1]))  #利用有序字典建立优先级字典队列 每次插入新的待探索元素后自动排序
+
         # self.frontier.update({node.state,node.path_cost})
+
+    def get(self):
+        if self.empty():
+            raise Exception("empty frontier")
+        else:
+            # self.frontier.popitem()
+            return next(iter(self.frontier.items()))
 
     def remove(self):
         if self.empty():
             raise Exception("empty frontier")
         else:
-            # 请添加你的代码，按照先进先出的顺序移除结点
-            node = self.frontier[0]
-            # 请更新frontier表，使得frontier表为移除了一个结点剩下的结点组成
-            self.frontier = self.frontier[1:]
-            return node
+            # self.frontier.popitem()
+            re = next(iter(self.frontier.items()))  # get the first item
+            self.frontier.pop(next(iter(self.frontier)))
+            return re
+
+
 
 #---
 
 #---c
 
 class Romania_trip(Problem):
-    def __init__(self,initial,goal,graph,graph_weight):
+    def __init__(self,initial,goal,graph,graph_weight,distance_to):
         Problem.__init__(self, initial, goal)
         self.graph = graph
         self.goal = goal
         self.state = Node
         self.graphWeight = graph_weight
+        self.distance = distance_to
         # print("init succeed")
         # print("initial = {}   goal = {}".format(self.initial,self.goal))
         # print(graph[initial])
@@ -251,13 +270,6 @@ class Romania_trip(Problem):
         # else:
         #     return state == self.goal
         return state != self.goal
-
-    # type=2 为A*搜索启发函数
-    def h(self, type):
-        if type == 1:
-            return 1
-        else:
-            return 0
 
 
     def greedy_best_first_graph_search(self):
@@ -289,12 +301,38 @@ class Romania_trip(Problem):
         print(mainpath)
 
     def astar_search(self, h=None):
+        path = []
+        path.append(0)
+        pre_path = 0
+        start = Node(state=self.initial, path_cost=0)
+        frontier = QueueFrontier()
+        frontier.add(start)
+        self.state = frontier.get()
+        while self.goal_test(self.state[0]):
+            pre = self.graphWeight[self.state[0]]
+            self.state = frontier.remove()
+            now = self.state[0]
+            # print(self.state[0])
 
-        return 1
+            print(self.state[0], end=' ')
+            if(self.state[0]!='Arad'):
+                pre_path = pre_path + pre[now]
+                print(pre_path,end='-->')
+                path.append(pre_path)
+            else:
+                print(pre_path,end='-->')
 
+            it = self.graphWeight[self.state[0]]  # 取得此时最小元素的子节点
+            for i in it:  # 循环遍历次数组 加入优先级队列中待命
+                frontier.add(Node(state=i, path_cost=it[i] + self.distance[i]))
+            # print(frontier.frontier)
+        print('end!')
+        # for i in path:
+        #     print(i,'-->',end='')
 
-rt = Romania_trip('Arad','Bucharest',neighbor_map,neighbormapWithweight)
-rt.greedy_best_first_graph_search()
+rt = Romania_trip('Arad','Bucharest',neighbor_map,neighbormapWithweight,distance_to_Bu)
+# rt.greedy_best_first_graph_search()
+rt.astar_search()
 
 
 
