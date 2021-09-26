@@ -333,9 +333,12 @@ class Romania_trip(Problem):
         # for i in path:
         #     print(i,'-->',end='')
 
-# rt = Romania_trip('Arad','Bucharest',neighbor_map,neighbormapWithweight,distance_to_Bu)
-# # rt.greedy_best_first_graph_search()
-# rt.astar_search()
+rt = Romania_trip('Arad','Bucharest',neighbor_map,neighbormapWithweight,distance_to_Bu)
+print('---greedy_best_first_graph_search---')
+rt.greedy_best_first_graph_search()
+print()
+print('---astar_search---')
+rt.astar_search()
 
 
 
@@ -484,12 +487,13 @@ class EightPuzzle(Problem):
         # print('m:',self.h(self.state))
 
 
+print()
+print('------Eight Puzzle-----')
 # test = (2,8,3,1,6,4,7,0,5)
 # test_goal = (1,2,3,8,0,4,7,6,5)
 # pz_test = EightPuzzle(initial=test,goal=test_goal)
 # pz_test.astar_solve()
 
-eight_initialu = (7,2,4,5,0,6,8,3,1)
 goal=(1,2,3,4,5,6,7,8,0)
 eight_initial = (2,4,3,1,5,6,7,8,0)
 pz = EightPuzzle(initial=eight_initial)
