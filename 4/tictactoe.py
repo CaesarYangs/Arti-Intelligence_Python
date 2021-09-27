@@ -108,26 +108,25 @@ def utility(board):
             return -1
         else:
             return 0
-    # Check how to handle exception when a non terminal board is received.
 
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    # #极小极大算法实现
-    # if terminal(board):    #判断是否为终局
-    #     return None
-    # else:
-    #     if player(board) == X:  #判断场上的先手关系
-    #         value, move = max_value(board)  #针对极大结点计算极大值
-    #         return move
-    #     else:
-    #         value, move = min_value(board)  #针对极小结点计算极小值
-    #         return move
+    #极小极大算法实现
+    if terminal(board):    #判断是否为终局
+        return None
+    else:
+        if player(board) == X:  #判断场上的先手关系
+            value, move = max_value(board)  #针对极大结点计算极大值
+            return move
+        else:
+            value, move = min_value(board)  #针对极小结点计算极小值
+            return move
 
-    #alpha beta剪枝算法
-    return alphbetaSearch(board)
+    # #alpha beta剪枝算法
+    # return alphbetaSearch(board)
 
 def max_value(board):   #针对极大结点计算极大值
     if terminal(board):
@@ -163,7 +162,6 @@ def min_value(board):    #针对极小结点计算极小值
 
     return v, move
 
-
 #alpha beta剪枝算法
 def alphbetaSearch(board):
     if terminal(board):    #判断是否为终局
@@ -179,28 +177,36 @@ def alphbetaSearch(board):
             return move
 
 
-def alphaMax_value(alpha,beta,board):
+def alphaMax_value(alpha,beta,board):   #针对极大结点计算极大值
     if terminal(board):
         return utility(board), None
 
     v = float('-inf')
-
+    move = None
     for action in actions(board):
         term, act = alphaMin_value(alpha,beta,result(board, action))
-        if v>=beta:
-            return v,action
-        alpha = max(alpha,v);
-    raise NotImplementedError
+        if v >= beta and term>v:    #判断剪枝条件
+            move = action
+            v = term
+            if v == -1:
+                return v, move
+        alpha = max(alpha, v)   #重新计算剪枝条件比较值
 
-def alphaMin_value(alpha,beta,board):
+    return v,move
+
+def alphaMin_value(alpha,beta,board):   #针对极小结点计算极小值
     if terminal(board):
         return utility(board), None
 
     v = float('inf')
-
+    move = None
     for action in actions(board):
         term, act = alphaMax_value(alpha, beta, result(board, action))
-        if v <= alpha:
-            return v,action
-        beta = min(beta,v)
-    raise NotImplementedError
+        if v <= alpha and term<v:   #判断剪枝条件
+            move = action
+            v = term
+            if v == 1:
+                return v, move
+        beta = min(beta, v) #重新计算剪枝条件比较值
+
+    return v,move
