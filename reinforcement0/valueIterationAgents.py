@@ -72,7 +72,7 @@ class ValueIterationAgent(ValueEstimationAgent):
 
             currIterations += 1
             # 补全如下代码：使用最好的值更新策略
-            self.values = allVals.argMax()
+            self.values = allVals
 
 
     def getValue(self, state):
@@ -95,7 +95,6 @@ class ValueIterationAgent(ValueEstimationAgent):
         # 计算Q值（用到mdp获得回报的函数）
         for pair in stateProbPairs:
             # compute q-value
-            #actVal += pair[1] * (self.mdp.getReward(state, action, pair[0]) + self.discount * self.values[pair[0]])
             actVal += pair[1] * (self.mdp.getReward(state, action, pair[0]) + self.discount * self.values[pair[0]])
 
         # 补全代码：返回值
